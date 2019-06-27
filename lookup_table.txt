@@ -55,4 +55,3 @@ Ernst	B+W+A	hash	uitkomst
 4	12	412	0
 4	13	413	0
 4	14	414	0
-=ZOEKEN(B33;Blad1!G36:G91;Blad1!H36:H91)

@@ -10,6 +10,20 @@ from PIL import Image
 from resizeimage import resizeimage
 from PIL.ExifTags import TAGS
 
+
+def add_lookup_table(workbook: Workbook):
+    worksheet = workbook.add_worksheet("table")
+    with open("lookup_table.txt", "r") as f:
+        for i, line in enumerate(f):
+            e, b, h, u = line.split("	")
+            worksheet.write("A" + str(i + 1), e)
+            worksheet.write("B" + str(i + 1), b)
+            worksheet.write("C" + str(i + 1), h)
+            worksheet.write("D" + str(i + 1), u)
+
+
+# =ZOEKEN(B33;Blad1!G36:G91;Blad1!H36:H91)
+
 if __name__ == "__main__":
     # register()
     import datetime
@@ -196,4 +210,5 @@ if __name__ == "__main__":
             j += 1
     worksheet.autofilter(0, 0, 1000, 11)
     worksheet.freeze_panes(1, 0)
+    add_lookup_table(workbook)
     workbook.close()
