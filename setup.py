@@ -10,6 +10,8 @@ from PIL import Image
 from resizeimage import resizeimage
 from PIL.ExifTags import TAGS
 
+sep = "|"
+
 
 def add_lookup_table(workbook: Workbook):
     worksheet = workbook.add_worksheet("table")
@@ -35,6 +37,46 @@ def insert_image(worksheet, image_path_small, image_path_list, j):
         },
     )
     worksheet.write_comment("F" + str(j), image_path_list[-1])
+
+
+class Column(object):
+    def __init__(self, column: int):
+        self.col_letter = ["I", "J", "K", "L", "M", "N", "O"][column]
+        with open("risicoscore.txt", "r") as f:
+            self.head = f.readline().split(sep)[column].replace("\n", "")
+            self.comment = ""
+            self.valid = []
+
+            if self.head in ["hash", "risico"]:
+                return
+            else:
+                for row_num, line in enumerate(f):
+                    r = line.split(sep)[column]
+                    if not r == "":
+                        self.comment += str(row_num) + ")" + r + "  "
+                        self.valid.append(row_num)
+
+    def formula(self, x: int):
+        if self.head == "hash":
+            return (
+                "=100*I"
+                + str(x)
+                + "+J"
+                + str(x)
+                + "+K"
+                + str(x)
+                + "+L"
+                + str(x)
+                + "+M"
+                + str(x)
+            )
+
+        elif self.head == "risico":
+            return "=ZOEKEN(B" + str(x) + ";table!A2:A200;table!B2:B200)"
+
+
+def make_cols():
+    return [Column(i) for i in range(7)]
 
 
 if __name__ == "__main__":
@@ -94,6 +136,77 @@ if __name__ == "__main__":
         for col, head in zip(["I", "J", "K", "L", "M", "N", "O"], line.split("|")):
             worksheet.write(col + "1", head)
 
+    j = 2
+    date_format = workbook.add_format({"num_format": "dd/mm/yyyy"})
+    time_format = workbook.add_format({"num_format": "hh:mm"})
+    cols = make_cols()
+
+    for i, image in enumerate(images):
+
+        if image.split(".")[-1] in ["jpg", "JPG"]:
+            image_path = os.path.join(pathname, image)
+            image_path_list = image_path.split(os.sep)
+            image_path_list.insert(-1, "small")
+            image_path_small = os.sep.join(image_path_list)
+            im = Image.open(image_path)
+            im.thumbnail((512, 512), Image.ANTIALIAS)
+            im.save(image_path_small)
+
+            worksheet.set_row(j - 1, 170)
+            try:
+                tags = Image.open(image_path)._getexif()
+                # print(tags)
+                date = tags[36867]
+
+            except:
+                date = "01-01-2010 00:00:00"
+            ret = {}
+            for tag, value in tags.items():
+                decoded = TAGS.get(tag, tag)
+                ret[decoded] = value
+
+            worksheet.write("A" + str(j), str(date.replace(" ", "")))
+            date_ = datetime.datetime.strptime(date.split(" ")[0], "%Y:%m:%d")
+            worksheet.write_datetime("B" + str(j), date_, date_format)
+
+            time_ = datetime.datetime.strptime(date.split(" ")[1], "%H:%M:%S")
+            worksheet.write_datetime("C" + str(j), time_, time_format)
+            insert_image(worksheet, image_path_small, image_path_list, j)
+
+            worksheet.data_validation(
+                "H" + str(j),
+                {
+                    "validate": "list",
+                    "source": [
+                        "arbeidsplaatsen",
+                        "gevaarlijke stoffen",
+                        "fysieke belasting",
+                        "fysische omstandigheden",
+                        "arbeidsmiddelen",
+                        "PBM en VG signalering",
+                    ],
+                },
+            )
+
+            for col in cols:
+                print(col.head, col.comment, col.col_letter)
+                if col.head in ["hash", "risico"]:
+                    print(col.head, col.formula(j))
+                    worksheet.write_formula(col.col_letter + str(j), col.formula(j))
+                else:
+                    worksheet.data_validation(
+                        col.col_letter + str(j),
+                        {"validate": "list", "source": col.valid},
+                    )
+                    worksheet.write_comment(col.col_letter + str(j), col.comment)
+
+                # else:
+            j += 1
+    worksheet.autofilter(0, 0, 1000, 11)
+    worksheet.freeze_panes(1, 0)
+    add_lookup_table(workbook)
+    workbook.close()
+
     # format910 = workbook.add_format({"bg_color": "#DF0101", "font_color": "#000000"})
 
     # format78 = workbook.add_format({"bg_color": "#FF8000", "font_color": "#000000"})
@@ -104,14 +217,10 @@ if __name__ == "__main__":
 
     # format2 = workbook.add_format({"bg_color": "#088A08", "font_color": "#000000"})
 
-    j = 2
-    date_format = workbook.add_format({"num_format": "dd/mm/yyyy"})
-    time_format = workbook.add_format({"num_format": "hh:mm"})
-
     # Write another conditional format over the same range.
-    worksheet.conditional_format(
-        "K2:K1000", {"type": "cell", "criteria": "=", "value": 2, "format": format2}
-    )
+    # worksheet.conditional_format(
+    #     "K2:K1000", {"type": "cell", "criteria": "=", "value": 2, "format": format2}
+    # )
     # worksheet.conditional_format(
     #     "K2:K1000",
     #     {
@@ -152,66 +261,3 @@ if __name__ == "__main__":
     #         "format": format910,
     #     },
     # )
-
-    for i, image in enumerate(images):
-
-        if image.split(".")[-1] in ["jpg", "JPG"]:
-            image_path = os.path.join(pathname, image)
-            image_path_list = image_path.split(os.sep)
-            image_path_list.insert(-1, "small")
-            image_path_small = os.sep.join(image_path_list)
-            im = Image.open(image_path)
-            im.thumbnail((512, 512), Image.ANTIALIAS)
-            im.save(image_path_small)
-
-            worksheet.set_row(j - 1, 170)
-            try:
-                tags = Image.open(image_path)._getexif()
-                # print(tags)
-                date = tags[36867]
-
-            except:
-                date = "01-01-2010 00:00:00"
-            ret = {}
-            for tag, value in tags.items():
-                decoded = TAGS.get(tag, tag)
-                ret[decoded] = value
-            print(ret)
-            worksheet.write("A" + str(j), str(date.replace(" ", "")))
-            date_ = datetime.datetime.strptime(date.split(" ")[0], "%Y:%m:%d")
-            worksheet.write_datetime("B" + str(j), date_, date_format)
-
-            time_ = datetime.datetime.strptime(date.split(" ")[1], "%H:%M:%S")
-            worksheet.write_datetime("C" + str(j), time_, time_format)
-            insert_image(worksheet, image_path_small, image_path_list, j)
-
-            worksheet.data_validation(
-                "H" + str(j),
-                {
-                    "validate": "list",
-                    "source": [
-                        "arbeidsplaatsen",
-                        "gevaarlijke stoffen",
-                        "fysieke belasting",
-                        "fysische omstandigheden",
-                        "arbeidsmiddelen",
-                        "PBM en VG signalering",
-                    ],
-                },
-            )
-
-            worksheet.data_validation(
-                "I" + str(j), {"validate": "list", "source": [1, 2, 3, 4, 5]}
-            )
-
-            worksheet.data_validation(
-                "J" + str(j), {"validate": "list", "source": [1, 2, 3, 4, 5]}
-            )
-            # "=ZOEKEN(B33;table!G36:G91;table!H36:H91)"
-            worksheet.write_formula("K" + str(j), "=I" + str(j) + "+J" + str(j))
-
-            j += 1
-    worksheet.autofilter(0, 0, 1000, 11)
-    worksheet.freeze_panes(1, 0)
-    add_lookup_table(workbook)
-    workbook.close()
