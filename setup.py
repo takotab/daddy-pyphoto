@@ -49,7 +49,9 @@ class Column(object):
     def __init__(self, column: int):
         self.col_letter = ["I", "J", "K", "L", "M", "N", "O"][column]
         with open("risicoscore.txt", "r") as f:
-            self.head = f.readline().split(sep)[column].replace("\n", "")
+            self.head = (
+                f.readline().split(sep)[column].replace("\n", "").replace(" ", "")
+            )
             self.comment = ""
             self.valid = []
 
@@ -212,58 +214,3 @@ if __name__ == "__main__":
     worksheet.freeze_panes(1, 0)
     add_lookup_table(workbook)
     workbook.close()
-
-    # format910 = workbook.add_format({"bg_color": "#DF0101", "font_color": "#000000"})
-
-    # format78 = workbook.add_format({"bg_color": "#FF8000", "font_color": "#000000"})
-
-    # format56 = workbook.add_format({"bg_color": "#FFFF00", "font_color": "#000000"})
-
-    # format34 = workbook.add_format({"bg_color": "#80FF00", "font_color": "#000000"})
-
-    # format2 = workbook.add_format({"bg_color": "#088A08", "font_color": "#000000"})
-
-    # Write another conditional format over the same range.
-    # worksheet.conditional_format(
-    #     "K2:K1000", {"type": "cell", "criteria": "=", "value": 2, "format": format2}
-    # )
-    # worksheet.conditional_format(
-    #     "K2:K1000",
-    #     {
-    #         "type": "cell",
-    #         "criteria": "between",
-    #         "minimum": 2.1,
-    #         "maximum": 4.5,
-    #         "format": format34,
-    #     },
-    # )
-    # worksheet.conditional_format(
-    #     "K2:K1000",
-    #     {
-    #         "type": "cell",
-    #         "criteria": "between",
-    #         "minimum": 4.6,
-    #         "maximum": 6.5,
-    #         "format": format56,
-    #     },
-    # )
-    # worksheet.conditional_format(
-    #     "K2:K1000",
-    #     {
-    #         "type": "cell",
-    #         "criteria": "between",
-    #         "minimum": 6.6,
-    #         "maximum": 8.5,
-    #         "format": format78,
-    #     },
-    # )
-    # worksheet.conditional_format(
-    #     "K2:K1000",
-    #     {
-    #         "type": "cell",
-    #         "criteria": "between",
-    #         "minimum": 8.6,
-    #         "maximum": 11,
-    #         "format": format910,
-    #     },
-    # )
