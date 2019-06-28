@@ -18,10 +18,16 @@ def add_lookup_table(workbook: Workbook):
     with open("lookup_table.txt", "r") as f:
         for i, line in enumerate(f):
             e, b, h, u = line.split("	")
-            worksheet.write("A" + str(i + 1), e)
-            worksheet.write("B" + str(i + 1), b)
-            worksheet.write("C" + str(i + 1), h)
-            worksheet.write("D" + str(i + 1), u)
+            if i == 0:
+                worksheet.write("A" + str(i + 1), e)
+                worksheet.write("B" + str(i + 1), b)
+                worksheet.write("C" + str(i + 1), h)
+                worksheet.write("D" + str(i + 1), u)
+            else:
+                worksheet.write_number("A" + str(i + 1), int(e))
+                worksheet.write_number("B" + str(i + 1), int(b))
+                worksheet.write_number("C" + str(i + 1), int(h))
+                worksheet.write_number("D" + str(i + 1), int(u))
 
 
 def insert_image(worksheet, image_path_small, image_path_list, j):
