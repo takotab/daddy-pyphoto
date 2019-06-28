@@ -78,7 +78,7 @@ class Column(object):
             )
 
         elif self.head == "risico":
-            return "=ZOEKEN(B" + str(x) + ";table!A2:A200;table!B2:B200)"
+            return "=ZOEKEN(B" + str(x) + ",table!C2:C200,table!D2:D200)"
 
 
 def make_cols():
