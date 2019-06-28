@@ -122,6 +122,9 @@ if __name__ == "__main__":
     worksheet.set_column("F:F", 30)
     worksheet.set_column("B:B", 12)
     worksheet.set_column("H:H", 25)
+    worksheet.set_column("J:J", 25)
+    worksheet.set_column("K:K", 25)
+    worksheet.set_column("M:M", 25)
     worksheet.set_column("L:L", 25, format_wrap)
     worksheet.set_column("G:G", 25, format_wrap)
 
