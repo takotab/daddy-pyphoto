@@ -5,5 +5,5 @@ numpy==1.16.4
 Pillow==6.0.0
 python-resize-image==1.1.19
 requests==2.22.0
-urllib3==1.25.3
+urllib3==1.26.5
 XlsxWriter==1.1.8
